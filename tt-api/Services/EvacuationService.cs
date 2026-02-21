@@ -25,7 +25,7 @@ public class EvacuationService(EvacuationStateService state) : IEvacuationServic
         {
             ZoneID = zone.ZoneID,
             NumberOfPeople = zone.NumberOfPeople,
-            UrgencyLevel =  zone.UrgencyLevel,
+            UrgencyLevel = zone.UrgencyLevel,
             LocationCoordinates = zone.LocationCoordinates,
             TotalEvacuated = 0,
             RemainingPeople = zone.NumberOfPeople,
@@ -35,6 +35,7 @@ public class EvacuationService(EvacuationStateService state) : IEvacuationServic
         {
             state.ZoneDatas.Add(zone);
         }
+
         return state.ZoneDatas;
     }
 
@@ -64,7 +65,9 @@ public class EvacuationService(EvacuationStateService state) : IEvacuationServic
                     NumberOfPeople = zone.NumberOfPeople
                 });
                 continue;
-            };
+            }
+
+            ;
 
             var eta = EvacautionUtil.CalculateEta(bestVehicleForZone.Distance, bestVehicleForZone.Vehicle.Speed);
 
@@ -79,7 +82,7 @@ public class EvacuationService(EvacuationStateService state) : IEvacuationServic
                     : $"{(int)eta.TotalSeconds} Seconds",
                 NumberOfPeople = zone.NumberOfPeople
             });
-            
+
             vehicleData.Remove(bestVehicleForZone.Vehicle);
         }
 

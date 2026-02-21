@@ -102,8 +102,8 @@ public class ZoneController(
     [HttpDelete("evacuation/clear")]
     public async Task<ActionResult> Delete()
     {
-        return await service.DeleteEvacPlans()
-            ? Ok(StatusCode(200))
-            : NotFound(StatusCode(404, "Evacuation plans list is empty"));
+        var result = await service.DeleteEvacPlans();
+        if(!result) return NotFound(StatusCode(400, "Don't have any evacuation plans"));
+        return Ok();
     }
 }
