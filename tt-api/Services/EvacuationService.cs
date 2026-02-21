@@ -42,11 +42,11 @@ public class EvacuationService(EvacuationStateService state) : IEvacuationServic
     public async Task<List<EvacuationPlanDto>> CreateEvacPlans()
     {
         state.Plans.Clear();
-        var vehicleData = state.VehicalDatas.ToHashSet();
-        var orderZones = state.ZoneDatas.OrderByDescending(x => x.UrgencyLevel);
+        var vehicleDatas = state.VehicalDatas.ToHashSet();
+        var orderZones = state.ZoneDatas.Where(z => z.RemainingPeople > 0).OrderByDescending(x => x.UrgencyLevel);
         foreach (var zone in orderZones)
         {
-            var bestVehicleForZone = vehicleData.Select(v => new
+            var bestVehicleForZone = vehicleDatas.Select(v => new
                 {
                     Vehicle = v,
                     Distance = EvacautionUtil.CalculateDistance(zone.LocationCoordinates, v.Location),
@@ -71,19 +71,19 @@ public class EvacuationService(EvacuationStateService state) : IEvacuationServic
 
             var eta = EvacautionUtil.CalculateEta(bestVehicleForZone.Distance, bestVehicleForZone.Vehicle.Speed);
 
-            zone.LastVehicleUsed = bestVehicleForZone.Vehicle.VehicalID;
+            zone.LastVehicleUsed = bestVehicleForZone.Vehicle.VehicleID;
 
             state.Plans.Add(new EvacuationPlanDto
             {
                 ZoneID = zone.ZoneID,
-                VehicalID = bestVehicleForZone.Vehicle.VehicalID,
+                VehicalID = bestVehicleForZone.Vehicle.VehicleID,
                 ETA = (int)eta.TotalMinutes > 0
                     ? $"{(int)eta.TotalMinutes} Minutes"
                     : $"{(int)eta.TotalSeconds} Seconds",
                 NumberOfPeople = zone.NumberOfPeople
             });
 
-            vehicleData.Remove(bestVehicleForZone.Vehicle);
+            vehicleDatas.Remove(bestVehicleForZone.Vehicle);
         }
 
         return state.Plans;
@@ -93,12 +93,12 @@ public class EvacuationService(EvacuationStateService state) : IEvacuationServic
     {
         if (state.Plans.Count <= 0)
             return [];
-
+        
         foreach (var zoneData in state.ZoneDatas)
         {
             if (zoneData.RemainingPeople <= 0) continue;
 
-            var vehicleData = state.VehicalDatas.FirstOrDefault(v => v.VehicalID == zoneData.LastVehicleUsed);
+            var vehicleData = state.VehicalDatas.FirstOrDefault(v => v.VehicleID == zoneData.LastVehicleUsed);
             if (vehicleData == null) continue;
             var minEvac = Math.Min(zoneData.RemainingPeople, vehicleData.Capacity);
             zoneData.TotalEvacuated += minEvac;

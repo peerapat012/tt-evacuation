@@ -6,5 +6,5 @@ namespace tt_api.Services;
 public interface IVehicleService
 {
     Task<List<VehicalDto>> GetVehicals();
-    Task<List<VehicalModel>>  CreateVehicles(List<CreateVehicleDto> dto);
+    Task<List<VehicleModel>>  CreateVehicles(List<CreateVehicleDto> dto);
 }

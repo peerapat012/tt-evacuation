@@ -9,7 +9,7 @@ public class VehicleService(EvacuationStateService state) : IVehicleService
     {
         var vehicalDtos = state.VehicalDatas.Select(vehical => new VehicalDto()
         {
-            VehicalID = vehical.VehicalID,
+            VehicalID = vehical.VehicleID,
             Capacity = vehical.Capacity,
             Type = vehical.Type,
             Location = vehical.Location,
@@ -19,11 +19,11 @@ public class VehicleService(EvacuationStateService state) : IVehicleService
         return vehicalDtos;
     }
 
-    public async Task<List<VehicalModel>> CreateVehicles(List<CreateVehicleDto> dtos)
+    public async Task<List<VehicleModel>> CreateVehicles(List<CreateVehicleDto> dtos)
     {
-        var newVehicles = dtos.Select(v => new VehicalModel
+        var newVehicles = dtos.Select(v => new VehicleModel
         {
-            VehicalID = v.VehicalID,
+            VehicleID = v.VehicalID,
             Capacity = v.Capacity,
             Type = v.Type,
             Location = v.Location,

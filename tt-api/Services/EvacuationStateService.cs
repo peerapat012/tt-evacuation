@@ -8,5 +8,5 @@ public class EvacuationStateService
 {
     public List<EvacuationPlanDto> Plans { get; set; } = new();
     public List<EvacuationZoneModel> ZoneDatas { get; set; } = EvacuationZoneMockupData.EvacuationZones;
-    public List<VehicalModel> VehicalDatas { get; set; } = VehicalMockupData.Vehicals;
+    public List<VehicleModel> VehicalDatas { get; set; } = VehicalMockupData.Vehicals;
 }
