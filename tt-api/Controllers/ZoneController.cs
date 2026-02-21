@@ -1,25 +1,37 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 using tt_api.Dtos;
 using tt_api.Services;
+using tt_api.Services.Caching;
 using tt_api.Utils;
 
 namespace tt_api.Controllers;
 
 [Route("api/")]
 [ApiController]
-public class ZoneController(IEvacuationService service) : ControllerBase
+public class ZoneController(IEvacuationService service, IRedisService redisService) : ControllerBase
 {
     [HttpGet("evacuation/status")]
     public async Task<ActionResult<List<EvacuationZoneStatusDto>>> Get()
     {
-        var result = await service.GetEvacZoneStatus();
-        return await Task.FromResult(StatusCode(200, result));
+        var evacuationZoneStatus = redisService.GetData<IEnumerable<EvacuationZoneStatusDto>>("zone_status");
+        Console.WriteLine(evacuationZoneStatus);
+        if (evacuationZoneStatus != null)
+        {
+            return await Task.FromResult(StatusCode(200, evacuationZoneStatus));
+        }
+
+        evacuationZoneStatus = await service.GetEvacZoneStatus();
+        redisService.SetData("zone_status", evacuationZoneStatus);
+        return await Task.FromResult(StatusCode(200, evacuationZoneStatus));
     }
 
     [HttpPost("evacuation-zones")]
     public async Task<ActionResult> CreateEvacuationZones([FromBody] List<CreateEvacuationZoneDto> evacZonesDto)
     {
         var result = await service.CreateEvacuationZone(evacZonesDto);
+        var zoneStatus = await service.GetEvacZoneStatus();
+        redisService.SetData("zone_status", zoneStatus);
         return await Task.FromResult(StatusCode(201, result));
     }
 
