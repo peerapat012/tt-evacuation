@@ -9,7 +9,11 @@ namespace tt_api.Controllers;
 
 [Route("api/")]
 [ApiController]
-public class ZoneController(IEvacuationService service, IRedisService redisService, ILogger<Program> logger)
+public class ZoneController(
+    EvacuationStateService stateData,
+    IEvacuationService service,
+    IRedisService redisService,
+    ILogger<Program> logger)
     : ControllerBase
 {
     [HttpGet("evacuation/status")]
@@ -39,6 +43,12 @@ public class ZoneController(IEvacuationService service, IRedisService redisServi
     [HttpPost("evacuation-zones")]
     public async Task<ActionResult> CreateEvacuationZones([FromBody] List<CreateEvacuationZoneDto> evacZonesDto)
     {
+        if (stateData.ZoneDatas.Select(z => z.ZoneID)
+            .Any(id => evacZonesDto.Select(ev => ev.ZoneID.ToLower()).Contains(id.ToLower())))
+        {
+            return BadRequest("Zone ID is already in use");
+        }
+
         var result = await service.CreateEvacuationZone(evacZonesDto);
         var zoneStatus = await service.GetEvacZoneStatus();
         redisService.SetData("zone_status", zoneStatus);

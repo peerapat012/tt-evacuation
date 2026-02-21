@@ -8,13 +8,13 @@ public class EvacautionUtil
     {
         const double EarthRadius = 6371;
 
-        var dLat = ToRadians(vehicleLocation.Latitude - zoneLocation.Latitude);
-        var dLon = ToRadians(vehicleLocation.Longitude - zoneLocation.Longitude);
+        var deltaLatitude = ToRadians(vehicleLocation.Latitude - zoneLocation.Latitude);
+        var deltaLongtitude = ToRadians(vehicleLocation.Longitude - zoneLocation.Longitude);
         var rLat1 = ToRadians(zoneLocation.Latitude);
         var rLat2 = ToRadians(vehicleLocation.Latitude);
 
-        var a = Math.Pow(Math.Sin(dLat / 2), 2) +
-                Math.Pow(Math.Sin(dLon / 2), 2) *
+        var a = Math.Pow(Math.Sin(deltaLatitude / 2), 2) +
+                Math.Pow(Math.Sin(deltaLongtitude / 2), 2) *
                 Math.Cos(rLat1) *
                 Math.Cos(rLat2);
         var c = 2 * Math.Asin(Math.Sqrt(a));
