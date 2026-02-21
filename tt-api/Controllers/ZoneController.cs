@@ -15,7 +15,6 @@ public class ZoneController(IEvacuationService service, IRedisService redisServi
     public async Task<ActionResult<List<EvacuationZoneStatusDto>>> Get()
     {
         var evacuationZoneStatus = redisService.GetData<IEnumerable<EvacuationZoneStatusDto>>("zone_status");
-        Console.WriteLine(evacuationZoneStatus);
         if (evacuationZoneStatus != null)
         {
             return await Task.FromResult(StatusCode(200, evacuationZoneStatus));
@@ -46,9 +45,11 @@ public class ZoneController(IEvacuationService service, IRedisService redisServi
     public async Task<ActionResult<List<EvacuationZoneStatusDto>>> Update()
     {
         var result = await service.UpdateEvacPlans();
+        
         if (result.Count <= 0)
             return NotFound(StatusCode(400, "Don't have any evacuation plans, pls create plans"));
-
+        redisService.SetData("zone_status", result);
+        
         return await Task.FromResult(StatusCode(201, result));
     }
 
