@@ -9,19 +9,30 @@ namespace tt_api.Controllers;
 
 [Route("api/")]
 [ApiController]
-public class ZoneController(IEvacuationService service, IRedisService redisService) : ControllerBase
+public class ZoneController(IEvacuationService service, IRedisService redisService, ILogger<Program> logger)
+    : ControllerBase
 {
     [HttpGet("evacuation/status")]
     public async Task<ActionResult<List<EvacuationZoneStatusDto>>> Get()
     {
         var evacuationZoneStatus = redisService.GetData<IEnumerable<EvacuationZoneStatusDto>>("zone_status");
-        if (evacuationZoneStatus != null)
+        if (evacuationZoneStatus == null)
         {
-            return await Task.FromResult(StatusCode(200, evacuationZoneStatus));
+            evacuationZoneStatus = await service.GetEvacZoneStatus();
+            redisService.SetData("zone_status", evacuationZoneStatus);
         }
 
-        evacuationZoneStatus = await service.GetEvacZoneStatus();
-        redisService.SetData("zone_status", evacuationZoneStatus);
+        //logging
+        foreach (var zone in evacuationZoneStatus)
+        {
+            logger.LogInformation(
+                "Zone ID: {id}, Total Evacuated: {totalEvac}, Remaining People: {people}, Last Vehicle Used: {vehicleId} ",
+                zone.ZoneID,
+                zone.TotalEvacuated,
+                zone.RemainingPeople,
+                zone.LastVehicleUsed);
+        }
+
         return await Task.FromResult(StatusCode(200, evacuationZoneStatus));
     }
 
@@ -38,6 +49,20 @@ public class ZoneController(IEvacuationService service, IRedisService redisServi
     public async Task<ActionResult> CreatePlan()
     {
         var result = await service.CreateEvacPlans();
+
+        //logging
+        logger.LogInformation("Plan: {plan} created", result.Count);
+        foreach (var (plan, i) in result.Select((v, i) => (v, i)))
+        {
+            logger.LogInformation(
+                "Plan: {index}, Zone ID: {zoneId}, Vehical ID: {vehId}, ETA: {eta}, Number of people to be evacuated: {people}",
+                i + 1,
+                plan.ZoneID,
+                plan.VehicalID,
+                plan.ETA,
+                plan.NumberOfPeople);
+        }
+
         return await Task.FromResult(StatusCode(201, result));
     }
 
@@ -45,11 +70,22 @@ public class ZoneController(IEvacuationService service, IRedisService redisServi
     public async Task<ActionResult<List<EvacuationZoneStatusDto>>> Update()
     {
         var result = await service.UpdateEvacPlans();
-        
+
         if (result.Count <= 0)
             return NotFound(StatusCode(400, "Don't have any evacuation plans, pls create plans"));
         redisService.SetData("zone_status", result);
-        
+
+        //logging
+        foreach (var zone in result)
+        {
+            logger.LogInformation(
+                "Zone ID: {id}, Total Evacuated: {totalEvac}, Remaining People: {people}, Last Vehicle Used: {vehicleId} ",
+                zone.ZoneID,
+                zone.TotalEvacuated,
+                zone.RemainingPeople,
+                zone.LastVehicleUsed);
+        }
+
         return await Task.FromResult(StatusCode(201, result));
     }
 
