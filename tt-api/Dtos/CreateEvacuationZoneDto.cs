@@ -8,4 +8,4 @@ public class CreateEvacuationZoneDto
     public LocationCoordinates LocationCoordinates { get; set; } = new LocationCoordinates();
     public int NumberOfPeople { get; set; }
     public int UrgencyLevel { get; set; }
-}
+} 

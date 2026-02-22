@@ -119,7 +119,7 @@ public class EvacuationService(EvacuationStateService state) : IEvacuationServic
 
     public async Task<bool> DeleteEvacPlans()
     {
-        if (state.Plans.Capacity <= 0) return false;
+        if (state.Plans.Count <= 0) return false;
         state.Plans.Clear();
         return true;
     }
